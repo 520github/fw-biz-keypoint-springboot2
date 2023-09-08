@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.sunso.keypoint.springboot2.spring.autoconfigure.SpringConfiguration
