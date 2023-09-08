@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.sunso.keypoint.springboot2.trace.log.web.mdc.autoconfigure.TraceLogWebAutoConfiguration
+
+org.springframework.context.ApplicationContextInitializer=\
+  org.sunso.keypoint.springboot2.trace.log.web.mdc.autoconfigure.TtlMDCAdapterInitializer
