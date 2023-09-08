@@ -12,6 +12,8 @@
         <module>trace-log-common</module>
         <module>trace-log-starter-web-mdc</module>
         <module>trace-log-starter-feign</module>
+        <module>controller-intercept-starter-global</module>
+        <module>biz-keypoint-common</module>
     </modules>
 
     <properties>
