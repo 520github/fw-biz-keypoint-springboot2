@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 @Order(0)
 public class ControllerLogAspect extends AbstractControllerLog {
   // AOP
-  @Pointcut("execution(* com.*.controller.*.*Controller.*(..)) || execution(* com.*.controller.*Controller.*(..)) || execution(* org.*.*.controller.*.*Controller.*(..)) || execution(* org.*.*.controller.*Controller.*(..))")
+  //@Pointcut("execution(* com.*.controller.*.*Controller.*(..)) || execution(* com.*.controller.*Controller.*(..)) || execution(* org.*.*.controller.*.*Controller.*(..)) || execution(* org.*.*.controller.*Controller.*(..))")
+  @Pointcut("execution(* com.*..*.controller..*Controller.*(..)) || execution(* org.*..*.controller..*Controller.*(..))")
   public void execute() {}
 
   @Around("execute()")
