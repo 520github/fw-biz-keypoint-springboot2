@@ -21,6 +21,10 @@ public class SpringEnvironment implements ApplicationContextAware {
         return applicationContext.getBean(clazz);
     }
 
+    public static <T> T getBean(String name, Class<T> clazz) {
+        return applicationContext.getBean(name, clazz);
+    }
+
     public static LogConfig getLogConfig() {
         return getBean(LogConfig.class);
     }
