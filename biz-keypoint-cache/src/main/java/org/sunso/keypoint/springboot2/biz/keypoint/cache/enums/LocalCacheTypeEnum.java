@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum LocalCacheTypeEnum {
     empty("empty", "无"),
-    caffeine("caffeine", "caffeine")
+    caffeine("caffeine", "caffeine"),
+    guava("guava", "guava")
 
     ;
     private String type;

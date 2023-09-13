@@ -1,4 +1,4 @@
-package org.sunso.keypoint.springboot2.biz.keypoint.cache.annotation;
+package org.sunso.keypoint.springboot2.biz.keypoint.cache.method.annotation;
 
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.DistributeCacheTypeEnum;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.LocalCacheTypeEnum;
@@ -29,8 +29,7 @@ public @interface MethodCache {
      * 业务前缀键
      * @return
      */
-    String prefixKey() default "default";
-
+    String bizPrefixKey() default "default";
 
     /**
      * 本地缓存类型

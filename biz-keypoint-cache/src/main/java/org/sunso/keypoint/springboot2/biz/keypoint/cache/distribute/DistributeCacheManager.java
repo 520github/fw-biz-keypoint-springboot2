@@ -25,6 +25,7 @@ public class DistributeCacheManager {
         DistributeCache distributeCache = distributeCacheMap.get(distributeCacheTypeEnum);
         if (distributeCache == null) {
             distributeCache = newDistributeCache(distributeCacheTypeEnum);
+            distributeCacheMap.put(distributeCacheTypeEnum, distributeCache);
         }
         return distributeCache;
     }

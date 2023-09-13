@@ -2,6 +2,7 @@ package org.sunso.keypoint.springboot2.biz.keypoint.cache.autoconfigure;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -11,6 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheWriter;
@@ -32,6 +34,7 @@ import javax.annotation.Resource;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+@Slf4j
 @Configuration
 @EnableConfigurationProperties(MultiLevelCacheConfig.class)
 public class MultiLevelCacheAutoConfiguration {
@@ -39,10 +42,11 @@ public class MultiLevelCacheAutoConfiguration {
     @Resource
     private MultiLevelCacheConfig multiLevelCacheConfig;
 
-    @Bean
-    @ConditionalOnMissingBean({RedisTemplate.class})
-    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Object, Object> template = new RedisTemplate<Object, Object>();
+    @Bean("redisTemplate")
+    @Primary
+    //@ConditionalOnMissingBean({RedisTemplate.class})
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
@@ -50,6 +54,7 @@ public class MultiLevelCacheAutoConfiguration {
         template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
         template.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
         template.afterPropertiesSet();
+        log.info("redisTemplate KeySerializer[{}]", template.getKeySerializer().getClass().getName());
         return template;
     }
 
