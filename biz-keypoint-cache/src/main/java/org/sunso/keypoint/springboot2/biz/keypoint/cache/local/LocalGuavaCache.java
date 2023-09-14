@@ -4,10 +4,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.SneakyThrows;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.LocalCacheTypeEnum;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.listener.GuavaCacheRemoveListener;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.model.LocalCacheModel;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -19,8 +22,8 @@ public class LocalGuavaCache extends AbstractLocalCache {
     }
 
     @Override
-    protected String cacheType() {
-        return "guava";
+    public String cacheType() {
+        return LocalCacheTypeEnum.guava.getType();
     }
 
     @SneakyThrows
@@ -52,6 +55,27 @@ public class LocalGuavaCache extends AbstractLocalCache {
         }
         guavaCache.invalidate(key);
         return 1;
+    }
+
+    @Override
+    public Map<String, Set<Object>> keys() {
+        Map<String, Set<Object>> keysMap = new HashMap<>();
+        for(String cacheKey: guavaCacheMap.keySet()) {
+            LoadingCache guavaCache = guavaCacheMap.get(cacheKey);
+            keysMap.put(cacheKey, guavaCache.asMap().keySet());
+        }
+        return keysMap;
+    }
+
+    @Override
+    public int clear() {
+        int result = 0;
+        for(String cacheKey: guavaCacheMap.keySet()) {
+            LoadingCache guavaCache = guavaCacheMap.get(cacheKey);
+            result+=guavaCache.asMap().size();
+            guavaCache.invalidateAll();
+        }
+        return result;
     }
 
     private LoadingCache getGuavaCache(long expireTime, TimeUnit timeUnit) {

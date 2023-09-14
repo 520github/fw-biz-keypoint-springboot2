@@ -1,12 +1,12 @@
-package org.sunso.keypoint.springboot2.biz.keypoint.cache.manager;
+package org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.support.AbstractValueAdaptingCache;
-import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
-import org.sunso.keypoint.springboot2.biz.keypoint.cache.config.MultiLevelCacheConfig;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute.DistributeCache;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.local.LocalCache;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel.config.MultiLevelCacheConfig;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.listener.CacheMessage;
 
 import javax.annotation.Resource;
@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
 
 
 @Slf4j
-public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache {
+public class DefaultMultiLevelCache extends AbstractValueAdaptingCache {
 
     @Resource
     private MultiLevelCacheConfig multiLevelCacheConfig;
@@ -23,29 +23,30 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
     @Resource
     private RedisTemplate<Object, Object> redisTemplate;
 
-    private RedisCache redisCache;
-    private CaffeineCache caffeineCache;
+    private DistributeCache distributeCache;
+    private LocalCache localCache;
 
-    public RedisAndCaffeineMultiLevelCache(boolean allowNullValues, RedisCache redisCache, CaffeineCache caffeineCache) {
-        super(allowNullValues);
-        this.redisCache = redisCache;
-        this.caffeineCache = caffeineCache;
+    public DefaultMultiLevelCache(DistributeCache distributeCache, LocalCache localCache) {
+        super(true);
+        this.distributeCache = distributeCache;
+        this.localCache = localCache;
     }
 
     @Override
     protected Object lookup(Object key) {
         Assert.notNull(key, "key不可为空");
-        ValueWrapper value;
+        String stringKey = getStringKey(key);
+        ValueWrapper value =null;
         //一级缓存开启，先从一级缓存获取数据
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
-            value = caffeineCache.get(key);
+            //value = localCache.get(stringKey);
             if (Objects.nonNull(value)) {
                 log.info("RedisAndCaffeineMultiLevelCache get key[{}] cache value[{}] from first level cache", key ,value);
                 return value.get();
             }
         }
         // 从二级缓存获取数据
-        value = redisCache.get(key);
+        //value = distributeCache.get(stringKey);
         if (Objects.isNull(value)) {
             log.info("RedisAndCaffeineMultiLevelCache get key[{}] cache value is null from second level cache", key);
             return null;
@@ -54,7 +55,7 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
         // 如果开启了一级缓存，就把二级缓存数据写入到一级缓存中
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
             log.info("RedisAndCaffeineMultiLevelCache set key[{}] cache value[{}] to first level cache", key, value);
-            caffeineCache.put(key, value.get());
+            //caffeineCache.put(key, value.get());
         }
         return value.get();
     }
@@ -76,7 +77,7 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
 
     @Override
     public void put(Object key, Object value) {
-        redisCache.put(key, value);
+        //redisCache.put(key, value);
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
             asyncPublish(key, value);
         }
@@ -90,7 +91,7 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
      */
     @Override
     public ValueWrapper putIfAbsent(Object key, Object value) {
-        ValueWrapper valueWrapper = redisCache.putIfAbsent(key, value);
+        ValueWrapper valueWrapper = null;//redisCache.putIfAbsent(key, value);
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
             asyncPublish(key, value);
         }
@@ -99,7 +100,7 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
 
     @Override
     public void evict(Object key) {
-        redisCache.evict(key);
+        //redisCache.evict(key);
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
             asyncPublish(key, null);
         }
@@ -107,7 +108,7 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
 
     @Override
     public void clear() {
-        redisCache.clear();
+        //redisCache.clear();
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
             asyncPublish(null, null);
         }
@@ -122,8 +123,12 @@ public class RedisAndCaffeineMultiLevelCache extends AbstractValueAdaptingCache 
     private CacheMessage getCacheMessage(Object key, Object value) {
         CacheMessage message = new CacheMessage();
         message.setCacheName(multiLevelCacheConfig.getCacheName());
-        message.setKey(key);
+        message.setKey(key.toString());
         message.setValue(value);
         return message;
+    }
+
+    private String getStringKey(Object key) {
+        return key.toString();
     }
 }

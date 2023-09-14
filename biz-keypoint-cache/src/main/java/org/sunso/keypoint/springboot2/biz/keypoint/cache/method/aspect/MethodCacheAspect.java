@@ -12,7 +12,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.local.LocalCache;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.local.LocalCacheManager;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.method.annotation.MethodCache;
-import org.sunso.keypoint.springboot2.biz.keypoint.cache.config.MethodCacheConfig;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.method.config.MethodCacheConfig;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute.DistributeCache;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute.DistributeCacheManager;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.DistributeCacheTypeEnum;
@@ -86,9 +86,12 @@ public class MethodCacheAspect extends BaseLog {
         }
         //从分布式缓存读取数据
         Object result = getDistributeCache(methodCache).get(methodCacheKey);
-        log.info("getDataFromCache get value[{}] from distribute cache by key[{}]", result, methodCacheKey);
+        if (result == null) {
+            return null;
+        }
+        log.info("getDataFromCache get value[{}],className[{}] from distribute cache by key[{}]", result, result.getClass().getName(), methodCacheKey);
         //设置到本地缓存
-        if (result != null && okLocalCache(methodCache)) {
+        if (okLocalCache(methodCache)) {
             log.info("getDataFromCache set value[{}] to local cache key[{}]", result, methodCacheKey);
             getLocalCache(methodCache).set(methodCacheKey, result, methodCache.expireTime(), methodCache.timeUnit());
         }

@@ -1,3 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  org.sunso.keypoint.springboot2.biz.keypoint.cache.autoconfigure.MultiLevelCacheAutoConfiguration,\
-  org.sunso.keypoint.springboot2.biz.keypoint.cache.autoconfigure.MethodCacheAutoConfiguration
+  org.sunso.keypoint.springboot2.biz.keypoint.cache.method.autoconfigure.MethodCacheAutoConfiguration,\
+  org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel.autoconfigure.MultiLevelCacheAutoConfiguration

@@ -1,6 +1,7 @@
 package org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.constant.Constants;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.DistributeCacheTypeEnum;
 import org.sunso.keypoint.springboot2.spring.SpringEnvironment;
 
@@ -32,7 +33,7 @@ public class DistributeCacheManager {
 
     private static DistributeCache newDistributeCache(DistributeCacheTypeEnum distributeCacheTypeEnum) {
         if (DistributeCacheTypeEnum.redis == distributeCacheTypeEnum) {
-            return new DistributeRedisCache(SpringEnvironment.getBean("redisTemplate", RedisTemplate.class));
+            return new DistributeRedisCache(SpringEnvironment.getBean(Constants.METHOD_CACHE_REDIS_TEMPLATE, RedisTemplate.class));
         }
         return null;
     }

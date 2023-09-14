@@ -14,4 +14,13 @@ public enum DistributeCacheTypeEnum {
         this.type = type;
         this.remark = remark;
     }
+
+    public static DistributeCacheTypeEnum getByCacheType(String cacheType) {
+        for(DistributeCacheTypeEnum cacheTypeEnum: DistributeCacheTypeEnum.values()) {
+            if (cacheTypeEnum.getType().equalsIgnoreCase(cacheType)) {
+                return cacheTypeEnum;
+            }
+        }
+        return null;
+    }
 }

@@ -1,5 +1,6 @@
 package org.sunso.keypoint.springboot2.spring;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.sunso.keypoint.springboot2.spring.log.LogConfig;
 
 @Component
+@Slf4j
 public class SpringEnvironment implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
@@ -15,6 +17,7 @@ public class SpringEnvironment implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         SpringEnvironment.applicationContext = applicationContext;
+        log.info("SpringEnvironment setApplicationContext ok---------------------------");
     }
 
     public static <T> T getBean(Class<T> clazz) {

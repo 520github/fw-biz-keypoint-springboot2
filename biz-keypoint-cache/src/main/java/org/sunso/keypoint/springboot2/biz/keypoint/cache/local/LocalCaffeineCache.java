@@ -3,10 +3,13 @@ package org.sunso.keypoint.springboot2.biz.keypoint.cache.local;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCache;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.LocalCacheTypeEnum;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.listener.CaffeineCacheRemoveListener;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.model.LocalCacheModel;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -51,6 +54,27 @@ public class LocalCaffeineCache extends AbstractLocalCache {
         return 1;
     }
 
+    @Override
+    public Map<String, Set<Object>> keys() {
+        Map<String, Set<Object>> keysMap = new HashMap<>();
+        for(String cacheKey: caffeineCacheMap.keySet()) {
+            CaffeineCache caffeineCache = caffeineCacheMap.get(cacheKey);
+            keysMap.put(cacheKey, caffeineCache.getNativeCache().asMap().keySet());
+        }
+        return keysMap;
+    }
+
+    @Override
+    public int clear() {
+        int result = 0;
+        for(String cacheKey: caffeineCacheMap.keySet()) {
+            CaffeineCache caffeineCache = caffeineCacheMap.get(cacheKey);
+            result+=caffeineCache.getNativeCache().asMap().size();
+            caffeineCache.clear();
+        }
+        return result;
+    }
+
     private CaffeineCache getCaffeineCache(long expireTime, TimeUnit timeUnit) {
         String cacheName = getCacheName(expireTime, timeUnit);
         CaffeineCache caffeineCache = caffeineCacheMap.get(cacheName);
@@ -88,8 +112,8 @@ public class LocalCaffeineCache extends AbstractLocalCache {
     }
 
     @Override
-    protected String cacheType() {
-        return "caffeine";
+    public String cacheType() {
+        return LocalCacheTypeEnum.caffeine.getType();
     }
 
     private CaffeineCache defaultCaffeineCache() {

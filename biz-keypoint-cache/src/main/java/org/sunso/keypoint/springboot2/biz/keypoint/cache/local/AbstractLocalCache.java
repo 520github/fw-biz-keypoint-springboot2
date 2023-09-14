@@ -12,17 +12,18 @@ public abstract class AbstractLocalCache implements LocalCache {
         this.localCacheModel = localCacheModel;
     }
 
-    protected abstract String cacheType();
-
     protected String getCacheName(long expireTime, TimeUnit timeUnit) {
         if (!localCacheModel.isGroupByExpireTime()) {
-            return "default";
+            return getPreCacheName();
         }
         return new StringBuffer()
-                .append("local-cache-")
-                .append(cacheType())
+                .append(getPreCacheName())
                 .append("-").append(expireTime).append("-")
                 .append(timeUnit.name()).toString();
+    }
+
+    private String getPreCacheName() {
+        return "local-cache-" + cacheType();
     }
 
     protected Long getDefaultExpireTime() {

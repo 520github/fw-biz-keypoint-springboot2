@@ -12,8 +12,17 @@ public enum LocalCacheTypeEnum {
     private String type;
     private String remark;
 
-    private LocalCacheTypeEnum(String type, String remark) {
+    LocalCacheTypeEnum(String type, String remark) {
         this.type = type;
         this.remark = remark;
+    }
+
+    public static LocalCacheTypeEnum getByCacheType(String cacheType) {
+        for(LocalCacheTypeEnum cacheTypeEnum: LocalCacheTypeEnum.values()) {
+            if (cacheTypeEnum.getType().equalsIgnoreCase(cacheType)) {
+                return cacheTypeEnum;
+            }
+        }
+        return null;
     }
 }

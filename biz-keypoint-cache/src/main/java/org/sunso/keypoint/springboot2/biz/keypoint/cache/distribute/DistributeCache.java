@@ -8,4 +8,6 @@ public interface DistributeCache {
     void set(String key, Object value, long expireTime, TimeUnit timeUnit);
 
     int remove(String key);
+
+    int removeByPatternKey(String patternKey);
 }

@@ -1,4 +1,4 @@
-package org.sunso.keypoint.springboot2.biz.keypoint.cache.config;
+package org.sunso.keypoint.springboot2.biz.keypoint.cache.method.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -1,10 +1,10 @@
-package org.sunso.keypoint.springboot2.biz.keypoint.cache.local;
+package org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public interface LocalCache {
+public interface MultiLevelCache {
+
+    Object get(String key);
     Object get(String key, long expireTime, TimeUnit timeUnit);
 
     void set(String key, Object value, long expireTime, TimeUnit timeUnit);
@@ -13,9 +13,5 @@ public interface LocalCache {
 
     int remove(String key, long expireTime, TimeUnit timeUnit);
 
-    Map<String, Set<Object>> keys();
-
     int clear();
-
-    String cacheType();
 }

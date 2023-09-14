@@ -1,4 +1,4 @@
-package org.sunso.keypoint.springboot2.biz.keypoint.cache.manager;
+package org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel;
 
 import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
