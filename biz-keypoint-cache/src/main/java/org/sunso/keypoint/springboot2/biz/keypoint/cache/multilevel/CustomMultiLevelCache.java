@@ -50,29 +50,39 @@ public class CustomMultiLevelCache implements MultiLevelCache {
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
             value = localCache.get(key, expireTime, timeUnit);
             if (Objects.nonNull(value)) {
-                log.info("RedisAndCaffeineMultiLevelCache get key[{}] cache value[{}] from first level cache", key ,value);
+                log.info("CustomMultiLevelCache get key[{}] cache value[{}] from first level cache", key ,value);
                 return value;
             }
         }
         // 从二级缓存获取数据
         value = distributeCache.get(key);
         if (Objects.isNull(value)) {
-            log.info("RedisAndCaffeineMultiLevelCache get key[{}] cache value is null from second level cache", key);
+            log.info("CustomMultiLevelCache get key[{}] cache value is null from second level cache", key);
             return null;
         }
-        log.info("RedisAndCaffeineMultiLevelCache get key[{}] cache value[{}] from second level cache", key, value);
+        log.info("CustomMultiLevelCache get key[{}] cache value[{}] from second level cache", key, value);
         // 如果开启了一级缓存，就把二级缓存数据写入到一级缓存中
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
-            log.info("RedisAndCaffeineMultiLevelCache set key[{}] cache value[{}] to first level cache", key, value);
+            log.info("CustomMultiLevelCache set key[{}] cache value[{}] to first level cache", key, value);
             localCache.set(key, value, expireTime, timeUnit);
         }
         return value;
     }
 
     @Override
+    public <T> T get(String key, long expireTime, TimeUnit timeUnit, Class<T> tClass) {
+        Object result = get(key, expireTime, timeUnit);
+        if (result == null) {
+            return null;
+        }
+        return (T)result;
+    }
+
+    @Override
     public void set(String key, Object value, long expireTime, TimeUnit timeUnit) {
         key = getMultiLevelKey(key);
         distributeCache.set(key, value, expireTime, timeUnit);
+        localCache.set(key, value, expireTime, timeUnit);
         //keyExpireTimeMap.put(key, ExpireTimeModel.newInstance(expireTime, timeUnit));
         notifyLocalCacheRemove(key, value, expireTime, timeUnit);
     }
@@ -81,6 +91,7 @@ public class CustomMultiLevelCache implements MultiLevelCache {
     public int remove(String key) {
         key = getMultiLevelKey(key);
         distributeCache.remove(key);
+        localCache.remove(key);
         notifyLocalCacheRemove(key, null, null, null);
         return 1;
     }
@@ -89,12 +100,14 @@ public class CustomMultiLevelCache implements MultiLevelCache {
     public int remove(String key, long expireTime, TimeUnit timeUnit) {
         key = getMultiLevelKey(key);
         distributeCache.remove(key);
+        localCache.remove(key, expireTime, timeUnit);
         notifyLocalCacheRemove(key, null, expireTime, timeUnit);
         return 1;
     }
 
     @Override
     public int clear() {
+        localCache.clear();
         notifyLocalCacheRemove(null, null, null, null);
         return 1;
     }

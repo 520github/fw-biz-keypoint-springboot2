@@ -12,6 +12,15 @@ public abstract class AbstractLocalCache implements LocalCache {
         this.localCacheModel = localCacheModel;
     }
 
+    @Override
+    public <T> T get(String key, long expireTime, TimeUnit timeUnit, Class<T> tClass) {
+        Object result = get(key, expireTime, timeUnit);
+        if (result == null) {
+            return null;
+        }
+        return (T)result;
+    }
+
     protected String getCacheName(long expireTime, TimeUnit timeUnit) {
         if (!isGroupByExpireTime()) {
             return getPreCacheName();

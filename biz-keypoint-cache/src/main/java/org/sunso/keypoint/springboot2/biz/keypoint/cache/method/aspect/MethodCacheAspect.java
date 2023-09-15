@@ -21,6 +21,8 @@ import org.sunso.keypoint.springboot2.biz.keypoint.cache.model.LocalCacheModel;
 import org.sunso.keypoint.springboot2.spring.log.BaseLog;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import java.lang.reflect.Method;
 
 @Aspect
@@ -209,6 +211,12 @@ public class MethodCacheAspect extends BaseLog {
         sb.append(method.getName()).append("&");
         if (args != null) {
             for(Object obj: args) {
+                if (obj instanceof ServletRequest) {
+                    continue;
+                }
+                if (obj instanceof ServletResponse) {
+                    continue;
+                }
                 sb.append(JSON.toJSONString(obj)).append("&");
             }
         }

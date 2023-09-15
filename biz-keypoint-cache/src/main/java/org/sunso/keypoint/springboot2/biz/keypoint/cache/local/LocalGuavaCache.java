@@ -10,6 +10,7 @@ import org.sunso.keypoint.springboot2.biz.keypoint.cache.model.LocalCacheModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +30,14 @@ public class LocalGuavaCache extends AbstractLocalCache {
     @SneakyThrows
     @Override
     public Object get(String key, long expireTime, TimeUnit timeUnit) {
-        return getGuavaCache(expireTime, timeUnit).get(key);
+        Object object =  getGuavaCache(expireTime, timeUnit).get(key);
+        if (object == null) {
+            return null;
+        }
+        if (Optional.empty() == object) {
+            return null;
+        }
+        return object;
     }
 
     @Override
@@ -113,8 +121,8 @@ public class LocalGuavaCache extends AbstractLocalCache {
                 .recordStats()
                 .build(new CacheLoader() {
                     @Override
-                    public Object load(Object o) throws Exception {
-                        return null;
+                    public Object load(Object key) throws Exception {
+                        return Optional.empty();
                     }
                 });
     }
