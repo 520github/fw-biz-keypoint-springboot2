@@ -8,9 +8,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MethodCacheConfig {
 
     /**
+     * 业务服务缓存的前缀
+     */
+    private String bizServiceCachePrefixKey = "service_";
+
+    /**
      * 方法缓存的前缀key
      */
-    private String MethodCachePrefixKey = "cache_method_";
+    private String methodCachePrefixKey = "method_cache_";
 
     /**
      * 本地缓存开关

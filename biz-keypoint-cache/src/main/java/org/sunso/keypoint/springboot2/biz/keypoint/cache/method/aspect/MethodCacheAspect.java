@@ -185,6 +185,9 @@ public class MethodCacheAspect extends BaseLog {
      */
     private String getMethodCacheKey(MethodCache methodCache, Method method, Object[] args, String className) {
         StringBuilder sb = new StringBuilder();
+        if (StrUtil.isNotBlank(methodCacheConfig.getBizServiceCachePrefixKey())) {
+            sb.append(methodCacheConfig.getBizServiceCachePrefixKey());
+        }
         sb.append(methodCacheConfig.getMethodCachePrefixKey());
         if (StrUtil.isNotBlank(methodCache.bizPrefixKey())) {
             sb.append(methodCache.bizPrefixKey()).append("_");

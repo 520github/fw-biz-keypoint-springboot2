@@ -13,7 +13,7 @@ public abstract class AbstractLocalCache implements LocalCache {
     }
 
     protected String getCacheName(long expireTime, TimeUnit timeUnit) {
-        if (!localCacheModel.isGroupByExpireTime()) {
+        if (!isGroupByExpireTime()) {
             return getPreCacheName();
         }
         return new StringBuffer()

@@ -1,6 +1,7 @@
 package org.sunso.keypoint.springboot2.biz.keypoint.cache.local;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.LocalCacheTypeEnum;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class LocalCaffeineCache extends AbstractLocalCache {
     private static Map<String, CaffeineCache> caffeineCacheMap = new ConcurrentHashMap<>();
 
@@ -22,7 +24,11 @@ public class LocalCaffeineCache extends AbstractLocalCache {
 
     @Override
     public Object get(String key, long expireTime, TimeUnit timeUnit) {
-        Cache.ValueWrapper valueWrapper = getCaffeineCache(expireTime, timeUnit).get(key);
+        CaffeineCache caffeineCache = getCaffeineCache(expireTime, timeUnit);
+        if (caffeineCache == null) {
+            return null;
+        }
+        Cache.ValueWrapper valueWrapper = caffeineCache.get(key);
         if (valueWrapper != null) {
             return valueWrapper.get();
         }
@@ -31,7 +37,7 @@ public class LocalCaffeineCache extends AbstractLocalCache {
 
     @Override
     public void set(String key, Object value, long expireTime, TimeUnit timeUnit) {
-        getCaffeineCache(expireTime, timeUnit).put(key, value);
+        getAndNewCaffeineCache(expireTime, timeUnit).put(key, value);
     }
 
     @Override
@@ -48,6 +54,7 @@ public class LocalCaffeineCache extends AbstractLocalCache {
         String cacheName = getCacheName(expireTime, timeUnit);
         CaffeineCache caffeineCache = caffeineCacheMap.get(cacheName);
         if (caffeineCache == null) {
+            log.info("LocalCaffeineCache remove get cache is null by cacheName[{}]", cacheName);
             return 0;
         }
         caffeineCache.evict(key);
@@ -76,6 +83,11 @@ public class LocalCaffeineCache extends AbstractLocalCache {
     }
 
     private CaffeineCache getCaffeineCache(long expireTime, TimeUnit timeUnit) {
+        String cacheName = getCacheName(expireTime, timeUnit);
+        return caffeineCacheMap.get(cacheName);
+    }
+
+    private CaffeineCache getAndNewCaffeineCache(long expireTime, TimeUnit timeUnit) {
         String cacheName = getCacheName(expireTime, timeUnit);
         CaffeineCache caffeineCache = caffeineCacheMap.get(cacheName);
         if (caffeineCache == null) {

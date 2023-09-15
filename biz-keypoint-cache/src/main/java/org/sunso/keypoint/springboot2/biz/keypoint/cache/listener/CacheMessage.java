@@ -21,4 +21,20 @@ public class CacheMessage extends AbstractChannelMessage implements Serializable
     public String getChannel() {
         return Constants.MULTI_LEVEL_CACHE_REDIS_CHANNEL;
     }
+
+    public static CacheMessage newInstance(String localCacheType,boolean groupByExpireTime) {
+        return newInstance(localCacheType, groupByExpireTime, null);
+    }
+    public static CacheMessage newInstance(String localCacheType,boolean groupByExpireTime, String key) {
+        CacheMessage instance = new CacheMessage();
+        instance.setLocalCacheType(localCacheType);
+        instance.setLocalCacheGroupByExpireTime(groupByExpireTime);
+        instance.setKey(key);
+        instance.setValue(null);
+        instance.setExpireTime(null);
+        instance.setTimeUnit(null);
+        return instance;
+    }
+
+
 }

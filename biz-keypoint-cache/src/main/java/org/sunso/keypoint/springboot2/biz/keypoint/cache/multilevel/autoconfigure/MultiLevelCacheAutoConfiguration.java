@@ -1,6 +1,7 @@
 package org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel.autoconfigure;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -60,7 +61,8 @@ public class MultiLevelCacheAutoConfiguration {
     }
 
     @Bean
-    public CustomMultiLevelCache customMultiLevelCache() {
+    @ConditionalOnBean({SpringEnvironment.class})
+    public CustomMultiLevelCache customMultiLevelCache(SpringEnvironment springEnvironment) {
         LocalCache localCache = LocalCacheManager.getCache(
                 LocalCacheTypeEnum.getByCacheType(multiLevelCacheConfig.getFirstLevelCacheType()), LocalCacheModel.newInstance(multiLevelCacheConfig));
         DistributeCache distributeCache = DistributeCacheManager.getCache(

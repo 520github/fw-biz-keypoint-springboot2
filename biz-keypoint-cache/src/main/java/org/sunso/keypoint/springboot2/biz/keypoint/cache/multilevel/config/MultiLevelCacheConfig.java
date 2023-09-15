@@ -9,6 +9,16 @@ import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.LocalCacheTypeEnu
 @Data
 public class MultiLevelCacheConfig {
     /**
+     * 业务服务缓存的前缀
+     */
+    private String bizServiceCachePrefixKey = "service_";
+
+    /**
+     * 多级缓存的前缀
+     */
+    private String multiLevelCachePrefixKey = "custom_";
+
+    /**
      * 多级缓存名称
      */
     private String cacheName = "cache_multilevel";
@@ -31,12 +41,12 @@ public class MultiLevelCacheConfig {
     /**
      * 一级本地缓存最大容量
      */
-    private Integer firstLevelMaxCapacity = 512;
+    private Integer firstLevelMaxCapacity = 100000;
 
     /**
      * 一级本地缓存初始化容量
      */
-    private Integer firstLevelInitCapacity = 64;
+    private Integer firstLevelInitCapacity = 10000;
 
     /**
      * 一级缓存类型

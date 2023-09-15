@@ -12,6 +12,7 @@ import org.sunso.keypoint.springboot2.biz.keypoint.cache.constant.Constants;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.method.aspect.MethodCacheAspect;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.method.config.MethodCacheConfig;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.method.controller.MethodCacheController;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.notify.LocalCacheRemoveNotify;
 
 @Slf4j
 @Configuration
@@ -41,5 +42,10 @@ public class MethodCacheAutoConfiguration {
     @Bean
     public MethodCacheController methodCacheController() {
         return new MethodCacheController();
+    }
+
+    @Bean
+    public LocalCacheRemoveNotify localCacheRemoveNotify(RedisTemplate methodCacheRedisTemplate) {
+        return new LocalCacheRemoveNotify(methodCacheRedisTemplate);
     }
 }

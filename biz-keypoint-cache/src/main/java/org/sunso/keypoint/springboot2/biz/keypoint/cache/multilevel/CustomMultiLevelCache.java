@@ -1,13 +1,18 @@
 package org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute.DistributeCache;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.listener.CacheMessage;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.local.LocalCache;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.model.ExpireTimeModel;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.multilevel.config.MultiLevelCacheConfig;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.notify.LocalCacheRemoveNotify;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +22,9 @@ public class CustomMultiLevelCache implements MultiLevelCache {
     private DistributeCache distributeCache;
     private LocalCache localCache;
     @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private LocalCacheRemoveNotify localCacheRemoveNotify;
+
+    //private Map<String, ExpireTimeModel> keyExpireTimeMap = new HashMap<>();
 
     public CustomMultiLevelCache(DistributeCache distributeCache, LocalCache localCache, MultiLevelCacheConfig multiLevelCacheConfig) {
         this.distributeCache = distributeCache;
@@ -25,18 +32,19 @@ public class CustomMultiLevelCache implements MultiLevelCache {
         this.multiLevelCacheConfig = multiLevelCacheConfig;
     }
 
-    public CustomMultiLevelCache setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-        return this;
-    }
+//    public CustomMultiLevelCache setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
+//        this.redisTemplate = redisTemplate;
+//        return this;
+//    }
 
-    @Override
-    public Object get(String key) {
-        return get(key, multiLevelCacheConfig.getCacheDefaultExpireTime(), TimeUnit.SECONDS);
-    }
+//    @Override
+//    public Object get(String key) {
+//        return get(key, multiLevelCacheConfig.getCacheDefaultExpireTime(), TimeUnit.SECONDS);
+//    }
 
     @Override
     public Object get(String key, long expireTime, TimeUnit timeUnit) {
+        key = getMultiLevelKey(key);
         //一级缓存开启，先从一级缓存获取数据
         Object value;
         if (multiLevelCacheConfig.isFirstLevelSwitch()) {
@@ -63,12 +71,15 @@ public class CustomMultiLevelCache implements MultiLevelCache {
 
     @Override
     public void set(String key, Object value, long expireTime, TimeUnit timeUnit) {
+        key = getMultiLevelKey(key);
         distributeCache.set(key, value, expireTime, timeUnit);
+        //keyExpireTimeMap.put(key, ExpireTimeModel.newInstance(expireTime, timeUnit));
         notifyLocalCacheRemove(key, value, expireTime, timeUnit);
     }
 
     @Override
     public int remove(String key) {
+        key = getMultiLevelKey(key);
         distributeCache.remove(key);
         notifyLocalCacheRemove(key, null, null, null);
         return 1;
@@ -76,6 +87,7 @@ public class CustomMultiLevelCache implements MultiLevelCache {
 
     @Override
     public int remove(String key, long expireTime, TimeUnit timeUnit) {
+        key = getMultiLevelKey(key);
         distributeCache.remove(key);
         notifyLocalCacheRemove(key, null, expireTime, timeUnit);
         return 1;
@@ -87,6 +99,18 @@ public class CustomMultiLevelCache implements MultiLevelCache {
         return 1;
     }
 
+    private String getMultiLevelKey(String key) {
+        StringBuilder sb = new StringBuilder();
+        if (StrUtil.isNotBlank(multiLevelCacheConfig.getBizServiceCachePrefixKey())) {
+            sb.append(multiLevelCacheConfig.getBizServiceCachePrefixKey());
+        }
+        if (StrUtil.isNotBlank(multiLevelCacheConfig.getMultiLevelCachePrefixKey())) {
+            sb.append(multiLevelCacheConfig.getMultiLevelCachePrefixKey());
+        }
+        sb.append(key);
+        return sb.toString();
+    }
+
     private void notifyLocalCacheRemove(String key, Object value, Long expireTime, TimeUnit timeUnit) {
         if (!multiLevelCacheConfig.isFirstLevelSwitch()) {
             return;
@@ -95,7 +119,7 @@ public class CustomMultiLevelCache implements MultiLevelCache {
     }
     void asyncPublish(String key, Object value, Long expireTime, TimeUnit timeUnit) {
         CacheMessage message = getCacheMessage(key, value, expireTime, timeUnit);
-        redisTemplate.convertAndSend(message.getChannel(), message);
+        localCacheRemoveNotify.notifyLocalCacheRemove(message);
         log.info("asyncPublish message[{}] to channel[{}]", message, message.getChannel());
     }
 

@@ -5,10 +5,13 @@ import org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute.DistributeCa
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.distribute.DistributeCacheManager;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.DistributeCacheTypeEnum;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.enums.LocalCacheTypeEnum;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.listener.CacheMessage;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.local.LocalCache;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.local.LocalCacheManager;
 import org.sunso.keypoint.springboot2.biz.keypoint.cache.model.LocalCacheModel;
+import org.sunso.keypoint.springboot2.biz.keypoint.cache.notify.LocalCacheRemoveNotify;
 
+import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,15 +19,20 @@ import java.util.Set;
 @RequestMapping("/method/cache/")
 public class MethodCacheController {
 
+    @Resource
+    private LocalCacheRemoveNotify localCacheRemoveNotify;
+
     @GetMapping("/remove/distribute/{distributeCacheType}/{keyPattern}")
     public int removeDistributePatternKey(@PathVariable String distributeCacheType, @PathVariable String keyPattern) throws Exception {
         return getDistributeCacheByCacheType(distributeCacheType).removeByPatternKey(keyPattern);
     }
 
-    @GetMapping("/remove/{distributeCacheType}/{LocalCacheType}/{groupByExpireTime}/{key}")
-    public int removeKey(@PathVariable String distributeCacheType, @PathVariable String LocalCacheType, @PathVariable boolean groupByExpireTime, @PathVariable String key) throws Exception {
+    @GetMapping("/remove/{distributeCacheType}/{localCacheType}/{groupByExpireTime}/{key}")
+    public int removeKey(@PathVariable String distributeCacheType, @PathVariable String localCacheType, @PathVariable boolean groupByExpireTime, @PathVariable String key) throws Exception {
         getDistributeCacheByCacheType(distributeCacheType).remove(key);
-        return getLocalCacheByCacheType(LocalCacheType, groupByExpireTime).remove(key);
+        //return getLocalCacheByCacheType(LocalCacheType, groupByExpireTime).remove(key);
+        localCacheRemoveNotify.notifyLocalCacheRemove(CacheMessage.newInstance(localCacheType, groupByExpireTime, key));
+        return 1;
     }
 
     @GetMapping("/keys/local/{cacheType}/{groupByExpireTime}")
@@ -34,7 +42,9 @@ public class MethodCacheController {
 
     @PostMapping("/clear/local/{cacheType}/{groupByExpireTime}")
     public int clear(@PathVariable String cacheType, @PathVariable boolean groupByExpireTime) throws Exception {
-       return getLocalCacheByCacheType(cacheType, groupByExpireTime).clear();
+       //return getLocalCacheByCacheType(cacheType, groupByExpireTime).clear();
+        localCacheRemoveNotify.notifyLocalCacheRemove(CacheMessage.newInstance(cacheType, groupByExpireTime));
+        return 1;
     }
 
     private DistributeCache getDistributeCacheByCacheType(String distributeCacheType) throws Exception {
