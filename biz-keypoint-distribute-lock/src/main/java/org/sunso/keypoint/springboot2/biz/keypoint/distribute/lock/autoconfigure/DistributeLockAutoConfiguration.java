@@ -6,6 +6,8 @@ import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.aspect.DistributeLockAspect;
+import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.handler.DistributeLockHandler;
 import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.handler.RedissonDistributeLockHandler;
 
 @Configuration
@@ -36,5 +38,10 @@ public class DistributeLockAutoConfiguration {
     @Bean
     public RedissonDistributeLockHandler redissonDistributeLockHandler(RedissonClient redissonClient) {
         return new RedissonDistributeLockHandler(redissonClient);
+    }
+
+    @Bean
+    public DistributeLockAspect distributeLockAspect(DistributeLockHandler distributeLockHandler) {
+        return new DistributeLockAspect(distributeLockHandler);
     }
 }

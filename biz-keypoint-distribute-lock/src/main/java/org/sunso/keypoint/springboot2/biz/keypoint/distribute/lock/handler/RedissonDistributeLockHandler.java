@@ -5,6 +5,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.enums.LockTypeEnum;
+import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.exception.DistributeLockException;
 import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.executer.DistributeLockExecuter;
 import org.sunso.keypoint.springboot2.biz.keypoint.distribute.lock.model.DistributeLockModel;
 
@@ -21,30 +22,53 @@ public class RedissonDistributeLockHandler implements DistributeLockHandler {
 
     @Override
     public Object handle(DistributeLockModel model, DistributeLockExecuter executer) {
-        RLock rLock = null;
-        try {
-            rLock = getLock(model.getLockTypeEnum(), model.getLockKey());
-            if (model.getWaitTime() > 0) {
-            }
-            if (rLock.tryLock(model.getWaitTime(), model.getLeaseTime(), model.getTimeUnit())) {
-                log.info("获取分布式锁key[{}]成功", model.getLockKey());
-                return executer.execute();
-            }
-            log.info("获取分布式锁失败[{}]" + model);
-        }catch (Exception e) {
-            log.error("获取分布式锁发生异常", e);
-        }finally {
-            if (rLock != null && rLock.isHeldByCurrentThread()) {
-                log.info("释放分布式锁key[{}]成功", model.getLockKey());
-                rLock.unlock();
-            }
-        }
-        return null;
+        return doHandle(model, executer, false);
+    }
+
+    @Override
+    public Object handleWithException(DistributeLockModel model, DistributeLockExecuter executer) throws DistributeLockException {
+        return doHandle(model, executer, true);
     }
 
     @Override
     public <T, R> R handle(DistributeLockModel model, Function<T, R> function, T functionPara) {
         return (R)handle(model, () -> function.apply(functionPara));
+    }
+
+    @Override
+    public <T, R> R handleWithException(DistributeLockModel model, Function<T, R> function, T functionPara) throws DistributeLockException {
+        return (R)handleWithException(model, () -> function.apply(functionPara));
+    }
+
+    private Object doHandle(DistributeLockModel model, DistributeLockExecuter executer, boolean getLockFailException) {
+        RLock rLock = null;
+        try {
+            rLock = getLock(model.getLockTypeEnum(), model.getLockKey());
+            if (model.getWaitTime() > 0) {
+            }
+            log.info("分布式锁 waitTime[{}]", model.getWaitTime());
+            if (rLock.tryLock(model.getWaitTime(), model.getExpireTime(), model.getTimeUnit())) {
+                log.info("获取分布式锁key[{}]成功", model.getLockKey());
+                return executer.execute();
+            }
+            log.info("获取分布式锁失败[{}]", model);
+
+            if (getLockFailException) {
+                throw new DistributeLockException(String.format("获取分布式锁[%s]失败", model.getLockKey()));
+            }
+        }catch (Exception e) {
+            log.error(String.format("获取分布式锁[%s]发生异常", model.getLockKey()), e);
+        }finally {
+            try {
+                if (rLock != null && rLock.isHeldByCurrentThread()) {
+                    log.info("释放分布式锁key[{}]成功", model.getLockKey());
+                    rLock.unlock();
+                }
+            }catch (Exception e) {
+                log.error("关闭分布式锁发生异常", e);
+            }
+        }
+        return null;
     }
 
 
