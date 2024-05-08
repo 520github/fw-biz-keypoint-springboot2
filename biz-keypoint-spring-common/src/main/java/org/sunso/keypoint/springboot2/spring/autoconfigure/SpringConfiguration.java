@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import org.sunso.keypoint.springboot2.spring.SpringEnvironment;
 import org.sunso.keypoint.springboot2.spring.redis.RedisOperate;
 
-import javax.annotation.Resource;
-
 @Component
 @ComponentScan({"org.sunso.keypoint.springboot2.spring"})
 @Configuration
