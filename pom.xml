@@ -17,9 +17,11 @@
         <module>biz-keypoint-spring-common</module>
         <module>biz-keypoint-cache</module>
         <module>biz-keypoint-distribute-lock</module>
+        <module>operate-log</module>
     </modules>
 
     <properties>
+        <current.version>1.0-SNAPSHOT</current.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
