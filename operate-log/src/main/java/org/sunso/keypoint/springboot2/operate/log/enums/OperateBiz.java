@@ -8,5 +8,9 @@ package org.sunso.keypoint.springboot2.operate.log.enums;
  */
 public interface OperateBiz {
 
+    String getPrimaryKeyJsonPath();
 
+    OperateBizBeanNameEnum getBizBeanNameEnum();
+
+    OperatePrimaryKeySourceEnum getPrimaryKeySourceEnum();
 }

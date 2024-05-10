@@ -1,5 +1,7 @@
 package org.sunso.keypoint.springboot2.operate.log.annotation;
 
+import org.sunso.keypoint.springboot2.operate.log.enums.DefaultOperateBizEnum;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,4 +40,7 @@ public @interface OperateLog {
      * @return
      */
     boolean logResultData() default true;
+
+
+    DefaultOperateBizEnum operateBizEnum() default DefaultOperateBizEnum.EMPTY;
 }

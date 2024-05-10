@@ -111,4 +111,9 @@ public class OperateLogData {
      */
     private String changeData;
 
+
+    public static OperateLogData newInstance() {
+        return new OperateLogData();
+    }
+
 }

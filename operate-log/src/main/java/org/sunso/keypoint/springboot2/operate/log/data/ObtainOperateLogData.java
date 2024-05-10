@@ -1,6 +1,8 @@
 package org.sunso.keypoint.springboot2.operate.log.data;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.sunso.keypoint.springboot2.operate.log.annotation.OperateLog;
+import org.sunso.keypoint.springboot2.operate.log.enums.OperateBiz;
 
 /**
  * @author sunso520
@@ -10,9 +12,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
  */
 public interface ObtainOperateLogData {
 
-    void obtainDataBeforeExecuteMethod(OperateLogData operateLogData, ProceedingJoinPoint joinPoint);
+    void obtainDataBeforeExecuteMethod(OperateLogData operateLogData, OperateLog operateLog, ProceedingJoinPoint joinPoint);
 
 
-    void obtainDataAfterExecuteMethod(OperateLogData operateLogData, Object result, Throwable exception);
+    void obtainDataAfterExecuteMethod(OperateLogData operateLogData, OperateLog operateLog, Object result, Throwable exception);
 
 }

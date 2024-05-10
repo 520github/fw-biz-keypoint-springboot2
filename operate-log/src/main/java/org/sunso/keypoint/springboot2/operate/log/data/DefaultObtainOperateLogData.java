@@ -6,8 +6,13 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
+import org.sunso.keypoint.springboot2.operate.log.annotation.OperateLog;
+import org.sunso.keypoint.springboot2.operate.log.enums.OperateBiz;
+import org.sunso.keypoint.springboot2.operate.log.service.OperateBizDataService;
 import org.sunso.keypoint.springboot2.spring.util.ServletUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,15 +31,18 @@ import java.util.stream.IntStream;
  * @Description: <br>
  * @Created on 2024/5/8 10:22
  */
+@Service
 public class DefaultObtainOperateLogData implements ObtainOperateLogData {
+    @Autowired
+    private OperateBizDataService operateBizDataService;
 
     @Override
-    public void obtainDataBeforeExecuteMethod(OperateLogData operateLogData, ProceedingJoinPoint joinPoint) {
+    public void obtainDataBeforeExecuteMethod(OperateLogData operateLogData, OperateLog operateLog, ProceedingJoinPoint joinPoint) {
         operateLogData.setStartTime(LocalDateTime.now());
         obtainUserData(operateLogData);
         obtainRequestData(operateLogData);
         obtainMethodData(operateLogData, joinPoint);
-        obtainBeforeData(operateLogData);
+        obtainBeforeData(operateLogData, operateLog.operateBizEnum());
     }
 
     private void obtainUserData(OperateLogData operateLogData) {
@@ -44,8 +52,8 @@ public class DefaultObtainOperateLogData implements ObtainOperateLogData {
         operateLogData.setUserRoles("");
     }
 
-    private void obtainBeforeData(OperateLogData operateLogData) {
-        operateLogData.setBeforeData("");
+    private void obtainBeforeData(OperateLogData operateLogData, OperateBiz operateBiz) {
+        operateLogData.setBeforeData(operateBizDataService.handleBeforeData(operateLogData, operateBiz));
     }
 
     private void obtainMethodData(OperateLogData operateLogData, ProceedingJoinPoint joinPoint) {
@@ -103,7 +111,7 @@ public class DefaultObtainOperateLogData implements ObtainOperateLogData {
     }
 
     @Override
-    public void obtainDataAfterExecuteMethod(OperateLogData operateLogData, Object result, Throwable exception) {
+    public void obtainDataAfterExecuteMethod(OperateLogData operateLogData, OperateLog operateLog, Object result, Throwable exception) {
         operateLogData.setDuration((LocalDateTimeUtil.between(operateLogData.getStartTime(), LocalDateTime.now()).toMillis()));
         if (result != null) {
             JSONObject jsonData = JSONUtil.parseObj(JSONUtil.toJsonStr(result));
@@ -115,11 +123,11 @@ public class DefaultObtainOperateLogData implements ObtainOperateLogData {
             operateLogData.setResultCode("500");
             operateLogData.setResultMsg(ExceptionUtil.getRootCauseMessage(exception));
         }
-        obtainAfterData(operateLogData);
+        obtainAfterData(operateLogData, operateLog.operateBizEnum());
     }
 
-    private void obtainAfterData(OperateLogData operateLogData) {
-        operateLogData.setAfterData("");
+    private void obtainAfterData(OperateLogData operateLogData, OperateBiz operateBiz) {
+        operateLogData.setAfterData(operateBizDataService.handleAfterData(operateLogData, operateBiz));
     }
 
     private String getCode(JSONObject jsonData) {
